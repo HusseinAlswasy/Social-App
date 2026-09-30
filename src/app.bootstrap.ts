@@ -4,9 +4,10 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { PORT } from "./config/config.service";
 import type { NextFunction, Request, Response } from "express";
-import AppError from "./common/middleware/globalErrorHandel.middleware";
+import AppError, { GlobalErrorHandling } from "./common/middleware/globalErrorHandel.middleware";
 import userRouter from "./modules/auth/auth.controller";
 import connectionDB from "./DB/connectionDB";
+import RedisService from "./common/service/redis.service";
 const app = express();
 const port = PORT;
 
@@ -22,6 +23,7 @@ export const bootstrap = async () => {
   app.use(express.json());
   app.use(cors(), helmet(), limiter);
 
+  await RedisService
   await connectionDB()
 
   app.get("/", (req: Request, res: Response, next: NextFunction) => {
@@ -37,11 +39,7 @@ export const bootstrap = async () => {
     );
   });
 
-  app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
-    res
-      .status(err.statusCode || 500)
-      .json({ message: err.message, stack: err.stack });
-  });
+  app.use(GlobalErrorHandling);
 
   app.listen(port, () => {
     console.log(`Social App is Running on port ${port} 🥳`);

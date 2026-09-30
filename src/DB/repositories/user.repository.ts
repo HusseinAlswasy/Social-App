@@ -1,9 +1,9 @@
-import { HydratedDocument, Model } from "mongoose";
+import { Model } from "mongoose";
+import userModel, { IUser } from "../../models/userModel";
+import { dataBaseRepository } from "./base.repository";
 
-export class userRepository<TDocument> {
-  constructor() {}
-
-  // async createUser(data: Partial<TDocument>): Promise<HydratedDocument<TDocument>> {
-  //   return this.model.create(data);
-  // }
+export class userRepository extends dataBaseRepository<IUser> {
+  constructor(public readonly model: Model<IUser> = userModel) {
+    super(model)
+  }
 }
