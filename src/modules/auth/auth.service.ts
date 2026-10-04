@@ -54,7 +54,7 @@ class AuthServices {
       fName,
       lName,
       email,
-      password: await hash(password),
+      password:password,
       age,
       gender,
       phone: phone ? Encrypt(phone) : null,

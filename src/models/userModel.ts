@@ -1,5 +1,6 @@
 import mongoose, { Types } from "mongoose";
 import { GenderEnum, RoleEnum } from "../common/enums/user.enum";
+import { hash } from "../common/security/hash";
 
 export interface IUser {
   _id: Types.ObjectId;
@@ -34,6 +35,15 @@ const userSchema = new mongoose.Schema<IUser>(
     timestamps: true,
   },
 );
+
+userSchema.pre("save",async function(){
+  if(!this.isModified("password")) return;
+  this.password = await hash(this.password);
+})
+
+userSchema.pre(/^find/, function (this: mongoose.Query<any, IUser>) {
+  this.select("-password");
+});
 
 const userModel = mongoose.models.User || mongoose.model<IUser>("User",userSchema)
 

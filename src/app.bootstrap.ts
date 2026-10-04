@@ -4,7 +4,9 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { PORT } from "./config/config.service";
 import type { NextFunction, Request, Response } from "express";
-import AppError, { GlobalErrorHandling } from "./common/middleware/globalErrorHandel.middleware";
+import AppError, {
+  GlobalErrorHandling,
+} from "./common/middleware/globalErrorHandel.middleware";
 import userRouter from "./modules/auth/auth.controller";
 import connectionDB from "./DB/connectionDB";
 import RedisService from "./common/service/redis.service";
@@ -23,14 +25,15 @@ export const bootstrap = async () => {
   app.use(express.json());
   app.use(cors(), helmet(), limiter);
 
-  await RedisService
-  await connectionDB()
+  await RedisService;
+  await connectionDB();
+
 
   app.get("/", (req: Request, res: Response, next: NextFunction) => {
     res.status(200).json({ message: "Welcome On Social App.....🎈🫡" });
   });
 
-  app.use("/users",userRouter)
+  app.use("/users", userRouter);
 
   app.use("{/*demo}", (req: Request, res: Response, next: NextFunction) => {
     throw new AppError(
