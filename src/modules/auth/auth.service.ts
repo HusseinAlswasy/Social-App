@@ -98,14 +98,16 @@ class AuthServices {
   };
 
    uploadFiles = async (req: Request, res: Response, next: NextFunction) => {
+  const files = req.files as Express.Multer.File[];
 
-    const Key = await this._s3Service.uploadFile({
-      file:req.file!,
-      path:"users"
+    const keys = await this._s3Service.uploadFiles({
+      files,
+      path:"users",
+
     })
     successResponse({
       res,
-      data:Key,
+      data:keys,
       message: "Uploaded Successfuly",
     });
   };

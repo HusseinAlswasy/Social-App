@@ -12,7 +12,7 @@ userRouter.post("/signIn", US.signIn);
 
 userRouter.post(
   "/upload",
-  multerCloud({}).single("attachments"),
+  multerCloud({}).array("attachments"),
   US.uploadFiles,
 );
 export default userRouter;
