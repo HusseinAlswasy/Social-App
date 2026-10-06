@@ -2,7 +2,7 @@ import multer from "multer";
 import { storeEnum, multerEnum } from "../enums/multer_enum";
 import { tmpdir } from "node:os";
 
-export const multerCloud = ({
+const multerCloud = ({
   store_type = storeEnum.memory,
   customTypes = multerEnum.image,
 }: {
@@ -33,6 +33,7 @@ export const multerCloud = ({
     }
   }
   const upload = multer({ storage, fileFilter });
+  return upload
 };
 
 export default multerCloud;

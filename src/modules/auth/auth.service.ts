@@ -3,18 +3,20 @@ import userModel, { IUser } from "../../models/userModel";
 import { HydratedDocument, Model } from "mongoose";
 import { signUpDto } from "./auth.validation";
 import { userRepository } from "../../DB/repositories/user.repository";
-import AppError from "../../common/middleware/globalErrorHandel.middleware.js";
-import { hash } from "../../common/security/hash.js";
-import { Encrypt } from "../../common/security/encrypt.js";
-import { eventEmitter } from "../../events/sendEmailEvent.js";
-import { EventEnum } from "../../common/enums/event_enum.js";
-import sendEmail, { otp } from "../../common/service/send_email.js";
-import { emailTemplate } from "../../common/utils/email.template.js";
-import { successResponse } from "../../common/utils/successResponse.js";
-import { RedisService } from "../../common/service/redis.service.js";
+import AppError from "../../common/middleware/globalErrorHandel.middleware";
+import { hash } from "../../common/security/hash";
+import { Encrypt } from "../../common/security/encrypt";
+import { eventEmitter } from "../../events/sendEmailEvent";
+import { EventEnum } from "../../common/enums/event_enum";
+import sendEmail, { otp } from "../../common/service/send_email";
+import { emailTemplate } from "../../common/utils/email.template";
+import { successResponse } from "../../common/utils/successResponse";
+import { RedisService } from "../../common/service/redis.service";
 import redisServices from "../../common/service/redis.service";
+import { s3Service } from "../../common/service/s3.service";
 class AuthServices {
   private readonly _userModel = new userRepository();
+  private readonly _s3Service = new s3Service();
 
   constructor() {} // its work when i create object
 
@@ -92,6 +94,19 @@ class AuthServices {
       status: 201,
       // data: ,
       message: "SignIn Successfuly",
+    });
+  };
+
+   uploadFiles = async (req: Request, res: Response, next: NextFunction) => {
+
+    const Key = await this._s3Service.uploadFile({
+      file:req.file!,
+      path:"users"
+    })
+    successResponse({
+      res,
+      data:Key,
+      message: "Uploaded Successfuly",
     });
   };
 }
