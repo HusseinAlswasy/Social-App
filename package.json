@@ -12,6 +12,7 @@
     "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.10.2",
+    "multer": "^2.4.0",
     "nodemailer": "^10.0.12",
     "redis": "^6.3.0",
     "zod": "^4.6.5"
@@ -26,6 +27,7 @@
     "@types/dotenv": "^6.1.1",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.3.0",
     "@types/nodemailer": "^8.0.2"
   },
   "scripts": {
