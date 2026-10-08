@@ -1,4 +1,5 @@
 import {
+  GetObjectCommand,
   ObjectCannedACL,
   PutObjectCommand,
   S3Client,
@@ -104,5 +105,13 @@ export class s3Service {
       files.map((file) => upload.call(this, { path, file, store_type, ACL })),
     );
     return keys as string[];
+  }
+  async getFiles(Key:string){
+    const command = new GetObjectCommand({
+      Key,
+      Bucket:AWS_BUCKET_NAME,
+    })
+
+    return await this.client.send(command);
   }
 }

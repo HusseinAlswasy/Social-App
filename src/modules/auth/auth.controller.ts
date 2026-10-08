@@ -15,4 +15,7 @@ userRouter.post(
   multerCloud({}).array("attachments"),
   US.uploadFiles,
 );
+
+userRouter.get("/getFile/*path",US.getFile)
+
 export default userRouter;

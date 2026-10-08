@@ -14,6 +14,7 @@ import { successResponse } from "../../common/utils/successResponse";
 import { RedisService } from "../../common/service/redis.service";
 import redisServices from "../../common/service/redis.service";
 import { s3Service } from "../../common/service/s3.service";
+import { pipeline } from "stream/promises";
 class AuthServices {
   private readonly _userModel = new userRepository();
   private readonly _s3Service = new s3Service();
@@ -56,7 +57,7 @@ class AuthServices {
       fName,
       lName,
       email,
-      password:password,
+      password: password,
       age,
       gender,
       phone: phone ? Encrypt(phone) : null,
@@ -97,18 +98,32 @@ class AuthServices {
     });
   };
 
-   uploadFiles = async (req: Request, res: Response, next: NextFunction) => {
-  const files = req.files as Express.Multer.File[];
+  uploadFiles = async (req: Request, res: Response, next: NextFunction) => {
+    const files = req.files as Express.Multer.File[];
 
     const keys = await this._s3Service.uploadFiles({
       files,
-      path:"users",
-
-    })
+      path: "users",
+    });
     successResponse({
       res,
-      data:keys,
+      data: keys,
       message: "Uploaded Successfuly",
+    });
+  };
+  getFile = async (req: Request, res: Response, next: NextFunction) => {
+    const { path } = req.params as { path: string[] };
+    const Key = path.join("/");
+
+    const result = await new s3Service().getFiles(Key);
+    const stream = result.Body as NodeJS.ReadableStream;
+    res.setHeader("content-type", result.ContentType!);
+    await pipeline(stream, res);
+
+    successResponse({
+      res,
+      data: result,
+      message: "Get File Successfully",
     });
   };
 }
