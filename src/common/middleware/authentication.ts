@@ -1,11 +1,11 @@
 import type { NextFunction, Request, Response } from "express";
-import AppError from "./globalErrorHandel.middleware.js";
-import tokenServices from "../token/token.services.js";
+import AppError from "./globalErrorHandel.middleware";
+import tokenServices from "../token/token.services";
 import { string } from "zod";
-import { JWT_SECRET } from "../../config/config.service.js";
-import { userRepository } from "../../DB/repositories/user.repository.js";
-import { RedisService } from "../service/redis.service.js";
-import { IRequest } from "../types/request.type.js";
+import { JWT_SECRET } from "../../config/config.service";
+import { userRepository } from "../../DB/repositories/user.repository";
+import { RedisService } from "../service/redis.service";
+import { IRequest } from "../types/request.type";
 const userRepo = new userRepository();
 const redisService = new RedisService();
 

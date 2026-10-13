@@ -111,21 +111,88 @@ class AuthServices {
       message: "Uploaded Successfuly",
     });
   };
+
   getFile = async (req: Request, res: Response, next: NextFunction) => {
     const { path } = req.params as { path: string[] };
+    const { download } = req.query;
     const Key = path.join("/");
 
     const result = await new s3Service().getFiles(Key);
     const stream = result.Body as NodeJS.ReadableStream;
     res.setHeader("content-type", result.ContentType!);
+    res.setHeader("cross-origin-resource-policy", "cross-origin");
+    if (download && download === "true") {
+      res.setHeader(
+        "content-disposition",
+        `attachment; filename="${path[path.length - 1]}"`,
+      );
+    }
+    if (result.ContentLength) {
+      res.setHeader("Content-Length", result.ContentLength);
+    }
     await pipeline(stream, res);
-
-    successResponse({
-      res,
-      data: result,
-      message: "Get File Successfully",
-    });
   };
+
+  preSignedFile = async (req: Request, res: Response, next: NextFunction) => {
+    const { ContentType, fileName } = req.body;
+    const { url, Key } = await new s3Service().createPreSignedUrl({
+      ContentType,
+      fileName,
+      path: "users",
+    });
+    res.status(200).json({ url, Key });
+  };
+
+  getPreSignedFile = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    const { path } = req.params as { path: string[] };
+    const { download } = req.query;
+
+    const Key = path.join("/");
+
+    const { url } = await new s3Service().getPreSignedUrl({
+      Key,
+      download: download as string,
+    });
+
+    res.status(200).json(url);
+  };
+
+  getAllFiles = async (req: Request, res: Response, next: NextFunction) => {
+    const { folderName } = req.query as { folderName: string };
+
+    const result = await new s3Service().getAllFiles(folderName);
+    console.log({ result });
+    const finalResult = result?.Contents?.map((file) => {
+      return { Key: file.Key };
+    });
+
+    res.status(200).json({ files: finalResult });
+  };
+
+  deleteFile = async (req: Request, res: Response, next: NextFunction) => {
+    const { Keys } = req.body;
+
+    await new s3Service().deleteFile(Keys);
+    res.status(200).json({ message: "File deleted successfully" });
+  }
+
+  deleteFiles = async (req: Request, res: Response, next: NextFunction) => {
+    const { Keys } = req.body;
+    await new s3Service().deleteFiles(Keys);
+    res.status(200).json({ message: "Files deleted successfully" });
+  } 
+
+  deleteFolder = async (req: Request, res: Response, next: NextFunction) => { 
+
+    const { Keys } = req.body;
+    await new s3Service().deleteFolder(Keys);
+    res.status(200).json({ message: "Folder deleted successfully" });
+  }
+
 }
 
 export default new AuthServices();

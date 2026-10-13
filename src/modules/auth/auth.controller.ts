@@ -18,4 +18,18 @@ userRouter.post(
 
 userRouter.get("/getFile/*path",US.getFile)
 
+userRouter.post("/upload/pre-signed-url",US.preSignedFile)
+
+userRouter.get("/upload/get/pre-signed-url/*path",US.getPreSignedFile)
+
+userRouter.get("/getAllFiles",US.getAllFiles)
+
+userRouter.get("/deleteFile/*path",US.deleteFile)
+
+userRouter.delete("/deleteFiles",US.deleteFiles)
+
+userRouter.delete("/deleteFolder",US.deleteFolder)
+
+
+
 export default userRouter;
