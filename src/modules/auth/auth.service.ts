@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import userModel, { IUser } from "../../models/userModel";
+import { IUser } from "../../models/userModel";
 import { HydratedDocument, Model } from "mongoose";
 import { signUpDto } from "./auth.validation";
 import { userRepository } from "../../DB/repositories/user.repository";
@@ -11,7 +11,6 @@ import { EventEnum } from "../../common/enums/event_enum";
 import sendEmail, { otp } from "../../common/service/send_email";
 import { emailTemplate } from "../../common/utils/email.template";
 import { successResponse } from "../../common/utils/successResponse";
-import { RedisService } from "../../common/service/redis.service";
 import redisServices from "../../common/service/redis.service";
 import { s3Service } from "../../common/service/s3.service";
 import { pipeline } from "stream/promises";
@@ -142,12 +141,7 @@ class AuthServices {
     });
     res.status(200).json({ url, Key });
   };
-
-  getPreSignedFile = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => {
+  getPreSignedFile = async (req: Request,res: Response,next: NextFunction,) => {
     const { path } = req.params as { path: string[] };
     const { download } = req.query;
 
