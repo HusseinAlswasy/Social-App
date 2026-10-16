@@ -8,11 +8,12 @@ import AppError, {
   GlobalErrorHandling,
 } from "./common/middleware/globalErrorHandel.middleware";
 import userRouter from "./modules/auth/auth.controller";
+import notificationRouter from "./modules/notification/notification.controller";
 import connectionDB from "./DB/connectionDB";
-import RedisService from "./common/service/redis.service";
+import RedisService from "./service/redis.service";
+import { NotificationService } from "./service/notification.service";
 const app = express();
 const port = PORT;
-
 export const bootstrap = async () => {
   const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -24,16 +25,15 @@ export const bootstrap = async () => {
 
   app.use(express.json());
   app.use(cors(), helmet(), limiter);
-
   await RedisService;
   await connectionDB();
-
 
   app.get("/", (req: Request, res: Response, next: NextFunction) => {
     res.status(200).json({ message: "Welcome On Social App.....🎈🫡" });
   });
 
   app.use("/users", userRouter);
+  app.use("/users/notifications", notificationRouter);
 
   app.use("{/*demo}", (req: Request, res: Response, next: NextFunction) => {
     throw new AppError(

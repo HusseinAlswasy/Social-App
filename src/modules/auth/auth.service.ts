@@ -8,11 +8,11 @@ import { hash } from "../../common/security/hash";
 import { Encrypt } from "../../common/security/encrypt";
 import { eventEmitter } from "../../events/sendEmailEvent";
 import { EventEnum } from "../../common/enums/event_enum";
-import sendEmail, { otp } from "../../common/service/send_email";
+import sendEmail, { otp } from "../../service/send_email";
 import { emailTemplate } from "../../common/utils/email.template";
 import { successResponse } from "../../common/utils/successResponse";
-import redisServices from "../../common/service/redis.service";
-import { s3Service } from "../../common/service/s3.service";
+import redisServices from "../../service/redis.service";
+import { s3Service } from "../../service/s3.service";
 import { pipeline } from "stream/promises";
 class AuthServices {
   private readonly _userModel = new userRepository();
@@ -141,7 +141,11 @@ class AuthServices {
     });
     res.status(200).json({ url, Key });
   };
-  getPreSignedFile = async (req: Request,res: Response,next: NextFunction,) => {
+  getPreSignedFile = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     const { path } = req.params as { path: string[] };
     const { download } = req.query;
 
@@ -172,21 +176,19 @@ class AuthServices {
 
     await new s3Service().deleteFile(Keys);
     res.status(200).json({ message: "File deleted successfully" });
-  }
+  };
 
   deleteFiles = async (req: Request, res: Response, next: NextFunction) => {
     const { Keys } = req.body;
     await new s3Service().deleteFiles(Keys);
     res.status(200).json({ message: "Files deleted successfully" });
-  } 
+  };
 
-  deleteFolder = async (req: Request, res: Response, next: NextFunction) => { 
-
+  deleteFolder = async (req: Request, res: Response, next: NextFunction) => {
     const { Keys } = req.body;
     await new s3Service().deleteFolder(Keys);
     res.status(200).json({ message: "Folder deleted successfully" });
-  }
-
+  };
 }
 
 export default new AuthServices();

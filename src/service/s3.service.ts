@@ -13,11 +13,11 @@ import {
   AWS_BUCKET_NAME,
   AWS_REGION,
   AWS_SECRET_ACCESS_KEY,
-} from "../../config/config.service";
+} from "../config/config.service";
 import { randomUUID } from "node:crypto";
-import { storeEnum } from "../enums/multer_enum.js";
+import { storeEnum } from "../common/enums/multer_enum.js";
 import fs from "fs";
-import AppError from "../middleware/globalErrorHandel.middleware.js";
+import AppError from "../common/middleware/globalErrorHandel.middleware.js";
 import { Upload } from "@aws-sdk/lib-storage";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
