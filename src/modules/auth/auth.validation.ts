@@ -25,4 +25,13 @@ export const signUpSchema = {
     }),
 };
 
+export const signInSchema = {
+  body: z.strictObject({
+    email: z.email(),
+    password: z.string().min(1, "Password is required"),
+    FCMToken: z.string().min(1).optional(),
+  }),
+};
+
 export type signUpDto = z.infer<typeof signUpSchema.body>;
+export type signInDto = z.infer<typeof signInSchema.body>;

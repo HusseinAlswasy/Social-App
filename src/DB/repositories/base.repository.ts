@@ -94,4 +94,41 @@ export abstract class dataBaseRepository<TDocument> {
   }): Promise<HydratedDocument<TDocument> | null> {
     return await this.model.findByIdAndDelete(filter, options);
   }
+  async paginate({
+    page=1,
+    limit=3,
+    sort,
+    populate,
+    search,
+  }: {
+    search?: QueryFilter<TDocument>;
+    page?: number;
+    limit?: number;
+    sort?: any;
+    populate?:any;
+  }) {
+    const skip = (page - 1) * limit;
+
+    const [data,counts] = await Promise.all([
+      this.model
+      .find({ ...(search ?? {}) })
+      .sort(sort ?? {})
+      .skip(skip ?? {})
+      .limit(limit)
+      .populate(populate??[]),
+
+    this.model.countDocuments({ ...(search ?? {}) }),
+    ])
+
+    return {
+      data,
+      meta:{
+        currentPage: page,
+        limit: limit,
+        totalPages: Math.ceil(counts / limit),
+        totalCount: counts,
+        totalDocuments: counts
+      }
+    }
+  }
 }

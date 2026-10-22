@@ -11,7 +11,7 @@ import userRouter from "./modules/auth/auth.controller";
 import notificationRouter from "./modules/notification/notification.controller";
 import connectionDB from "./DB/connectionDB";
 import RedisService from "./service/redis.service";
-import { NotificationService } from "./service/notification.service";
+import postRouter from "./modules/post/post.controller";
 const app = express();
 const port = PORT;
 export const bootstrap = async () => {
@@ -33,6 +33,8 @@ export const bootstrap = async () => {
   });
 
   app.use("/users", userRouter);
+  app.use("/posts", postRouter);
+
   app.use("/users/notifications", notificationRouter);
 
   app.use("{/*demo}", (req: Request, res: Response, next: NextFunction) => {

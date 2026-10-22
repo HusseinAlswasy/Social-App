@@ -11,9 +11,16 @@ import { EventEnum } from "../../common/enums/event_enum";
 import sendEmail, { otp } from "../../service/send_email";
 import { emailTemplate } from "../../common/utils/email.template";
 import { successResponse } from "../../common/utils/successResponse";
-import redisServices from "../../service/redis.service";
+import redisService from "../../service/redis.service";
 import { s3Service } from "../../service/s3.service";
 import { pipeline } from "stream/promises";
+import { compare } from "bcrypt";
+import { NotificationService } from "../../service/notification.service";
+import jwt from "jsonwebtoken";
+import { JWT_REFRESH_SECRET, JWT_SECRET } from "../../config/config.service.js";
+import { randomUUID } from "node:crypto";
+import { signInDto } from "./auth.validation";
+
 class AuthServices {
   private readonly _userModel = new userRepository();
   private readonly _s3Service = new s3Service();
@@ -40,14 +47,14 @@ class AuthServices {
     const otpCode = await otp();
     const otpHashed = await hash(otpCode.toString());
 
-    await redisServices.setValue({
+    await redisService.setValue({
       key: `otp:${email}`,
       value: otpHashed,
       ttl: 60, // 1 minutes
     });
 
-    await redisServices.setValue({
-      key: await redisServices.max_otp_key(email),
+    await redisService.setValue({
+      key: await redisService.max_otp_key(email),
       value: 1,
       ttl: 60 * 6, // 1 minutes
     });
@@ -87,13 +94,54 @@ class AuthServices {
   };
 
   signIn = async (req: Request, res: Response, next: NextFunction) => {
-    const { email, password } = req.body;
+    const { email, password, FCMToken }: signInDto = req.body;
+    const notificationService = new NotificationService();
+
+    const user = await this._userModel.findOne({
+      filter: { email },
+      options: { select: "+password" },
+    });
+
+    if (!user || !user.password) {
+      throw new AppError("Invalid email or password", 400);
+    }
+
+    const isMatch = await compare(password, user.password);
+    if (!isMatch) {
+      throw new AppError("Invalid email or password", 400);
+    }
+
+    const access_token = jwt.sign({ id: user._id }, JWT_SECRET!, {
+      expiresIn: "1h",
+      jwtid: randomUUID(),
+    });
+    const refresh_token = jwt.sign({ id: user._id }, JWT_REFRESH_SECRET!, {
+      expiresIn: "7d",
+      jwtid: randomUUID(),
+    });
+
+    if (FCMToken) {
+      await redisService.addFCM({ userId: user._id, FCMToken });
+    }
+
+    const tokens = await redisService.getFCMs(user._id);
+    const otherDevices = tokens.filter((t) => t !== FCMToken);
+
+    await Promise.allSettled(
+      otherDevices.map((token) => {
+        return notificationService.sendToDevice({
+          token,
+          title: "New SignIn",
+          body: `Your account was signed in from a new device at ${new Date().toLocaleString()}`,
+        });
+      }),
+    );
 
     successResponse({
       res,
-      status: 201,
-      // data: ,
-      message: "SignIn Successfuly",
+      status: 200,
+      message: "SignIn Successfully",
+      data: { access_token, refresh_token },
     });
   };
 
@@ -141,6 +189,7 @@ class AuthServices {
     });
     res.status(200).json({ url, Key });
   };
+
   getPreSignedFile = async (
     req: Request,
     res: Response,

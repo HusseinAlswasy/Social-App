@@ -13,6 +13,7 @@ export interface IUser {
   address?: string;
   gender?: GenderEnum;
   role?: RoleEnum;
+  friends: Types.ObjectId[];
   confirmed?: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -23,12 +24,13 @@ const userSchema = new mongoose.Schema<IUser>(
     fName: { type: String, required: true, trim: true, minLength: 2 },
     lName: { type: String, required: true, trim: true, minLength: 2 },
     email: { type: String, required: true, trim: true, unique: true },
-    password: { type: String, required: true, trim: true },
+    password: { type: String, required: true, trim: true, select: false },
     age: { type: Number, required: true },
     address: { type: String, trim: true },
     phone: { type: String, required: true, trim: true, minLength: 2 },
     gender: { type: String, enum: GenderEnum, default: GenderEnum.male },
     role: { type: String, enum: RoleEnum, default: RoleEnum.user },
+    friends: [{ type: Types.ObjectId, ref: "User" }],
     confirmed: { type: Boolean },
   },
   {
@@ -36,15 +38,12 @@ const userSchema = new mongoose.Schema<IUser>(
   },
 );
 
-userSchema.pre("save",async function(){
-  if(!this.isModified("password")) return;
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
   this.password = await hash(this.password);
-})
-
-userSchema.pre(/^find/, function (this: mongoose.Query<any, IUser>) {
-  this.select("-password");
 });
 
-const userModel = mongoose.models.User || mongoose.model<IUser>("User",userSchema)
+const userModel =
+  mongoose.models.User || mongoose.model<IUser>("User", userSchema);
 
-export default userModel
+export default userModel;
