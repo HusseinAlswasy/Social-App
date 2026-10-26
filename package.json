@@ -20,7 +20,7 @@
     "multer": "^2.4.0",
     "nodemailer": "^10.0.12",
     "redis": "^6.3.0",
-    "zod": "^4.6.5"
+    "zod": "^4.6.6"
   },
   "name": "social-app",
   "version": "1.0.0",
