@@ -1,5 +1,5 @@
 import postModel from "../../models/postModel";
-import { postRepository } from "../../DB/repositories/post.repository";
+import { postRepository } from "../../models/repositories/post.repository";
 import { s3Service } from "../../service/s3.service";
 import { createPostDto, like_unLikeDto } from "./post.validation";
 import type { NextFunction, Request, Response } from "express";
@@ -10,15 +10,20 @@ import { successResponse } from "../../common/utils/successResponse.js";
 import { NotificationService } from "../../service/notification.service.js";
 import { IRequest } from "../../common/types/request.type.js";
 import { randomUUID } from "crypto";
-import { PostAction, PostAvailabilityEnum } from "../../common/enums/post_enum.js";
-import { userRepository } from "../../DB/repositories/user.repository.js";
+import {
+  PostAction,
+  PostAvailabilityEnum,
+} from "../../common/enums/post_enum.js";
+import { userRepository } from "../../models/repositories/user.repository.js";
 import { PostAvailability } from "./post.helper.js";
+import { commentRepository } from "../../models/repositories/comment.repository.js";
 
 const notificationService = new NotificationService();
 
 class PostServices {
   private readonly _postModel = new postRepository();
   private readonly _userModel = new userRepository();
+  private readonly _commentModel = new commentRepository();
   private readonly _s3Service = new s3Service();
 
   constructor() {}
@@ -98,36 +103,44 @@ class PostServices {
       throw new AppError("Unauthorized", 401);
     }
 
-    // const posts = await this._postModel.find({
-    //   filter: {
-    //     $or: [
-    //       { availability: PostAvailabilityEnum.public },
-    //       {
-    //         availability: PostAvailabilityEnum.private,
-    //         createdBy: req.user._id,
-    //       },
-    //       {
-    //         availability: PostAvailabilityEnum.friends,
-    //         createdBy: { $in: [...(req.user.friends || []), req.user._id] },
-    //       },
-    //       { tag: { $in: [req.user._id] } },
-    //     ],
-    //   },
-
-    //   options:{
-    //     limit,
-    //     skip
-    //   }
-
-    // });
-
-    const posts = await this._postModel.paginate({
-      page,
-      limit: 3,
-      search: {
+    const posts = await this._postModel.find({
+      filter: {
         $or: [...PostAvailability(req)],
       },
+      options: {
+        populate: [
+          {
+            path: "comments",
+            match: { commentId: { $exists: false } },
+            populate: [{ path: "replies" }],
+          },
+        ],
+      },
+
+      // options: {
+      //   limit,
+      //   skip,
+      // },
     });
+
+    // let docs = []
+    // for (const post of posts) {
+    //   const comments = await this._commentModel.find({
+    //     filter: {
+    //       postId: post._id,
+    //       commentId:{$exists:false}
+    //     },
+    //   });
+    //   docs.push({...post.toObject(),comments})
+    // }
+
+    // const posts = await this._postModel.paginate({
+    //   page,
+    //   limit: 3,
+    //   search: {
+    //     $or: [...PostAvailability(req)],
+    //   },
+    // });
 
     successResponse({
       res,
@@ -248,7 +261,6 @@ class PostServices {
       message: "Updated Post Successfully",
     });
   };
-
   //================================ Like Post ==========================================
   like_unlike_post = async (
     req: IRequest,

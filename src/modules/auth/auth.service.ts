@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import { IUser } from "../../models/userModel";
 import { HydratedDocument, Model } from "mongoose";
 import { signUpDto } from "./auth.validation";
-import { userRepository } from "../../DB/repositories/user.repository";
+import { userRepository } from "../../models/repositories/user.repository";
 import AppError from "../../common/middleware/globalErrorHandel.middleware";
 import { hash } from "../../common/security/hash";
 import { Encrypt } from "../../common/security/encrypt";

@@ -12,6 +12,16 @@ import notificationRouter from "./modules/notification/notification.controller";
 import connectionDB from "./DB/connectionDB";
 import RedisService from "./service/redis.service";
 import postRouter from "./modules/post/post.controller";
+import commentRouter from "./modules/comment/comment.controller";
+import {
+  GraphQLSchema,
+  GraphQLObjectType,
+  GraphQLNonNull,
+  GraphQLString,
+} from "graphql";
+
+import { createHandler } from "graphql-http/lib/use/express";
+
 const app = express();
 const port = PORT;
 export const bootstrap = async () => {
@@ -32,8 +42,27 @@ export const bootstrap = async () => {
     res.status(200).json({ message: "Welcome On Social App.....🎈🫡" });
   });
 
+  const schema = new GraphQLSchema({
+    query: new GraphQLObjectType({
+      name:"query",
+      description:"new",
+      fields:{
+        hello:{
+          type:new GraphQLNonNull(GraphQLString),
+          description:"return hello",
+          resolve:()=>{
+            return "Hussein"
+          }
+        }
+      }
+    })
+  })
+
+  app.use('/graphql', createHandler({schema}));
+
   app.use("/users", userRouter);
   app.use("/posts", postRouter);
+  app.use("/comment",commentRouter)
 
   app.use("/users/notifications", notificationRouter);
 

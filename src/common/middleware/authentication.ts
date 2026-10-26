@@ -3,7 +3,7 @@ import AppError from "./globalErrorHandel.middleware";
 import tokenServices from "../token/token.services";
 import { string } from "zod";
 import { JWT_SECRET } from "../../config/config.service";
-import { userRepository } from "../../DB/repositories/user.repository";
+import { userRepository } from "../../models/repositories/user.repository";
 import { RedisService } from "../../service/redis.service";
 import { IRequest } from "../types/request.type";
 const userRepo = new userRepository();
