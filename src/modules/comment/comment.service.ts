@@ -31,6 +31,7 @@ class CommentServices {
     const { postId, commentId } = req.params;
 
     let doc: HydratedDocument<IPost | IComment> | null = null;
+
     if (onModel === OnModelEnum.Comment && commentId) {
       const comment = await this._commentModel.findOne({
         filter: {
@@ -138,7 +139,10 @@ class CommentServices {
 
     successResponse({
       res,
-      message: "Action created successfully",
+      message:
+        onModel === OnModelEnum.Comment
+          ? "Reply created successfully"
+          : "Comment created successfully",
       data: Comment,
       status: 201,
     });

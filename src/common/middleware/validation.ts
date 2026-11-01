@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { ZodType } from "zod";
 import AppError from "./globalErrorHandel.middleware";
+import { GraphQLError } from "graphql";
 
 type reqType = keyof Request; // properties in express request
 
@@ -33,4 +34,14 @@ export const Validation = (schema: schemaType) => {
     }
     next();
   };
+};
+
+export const Validation_gql = async (schema: ZodType, data: any) => {
+  const result = await schema.safeParseAsync(data);
+
+  if (result?.error) {
+    throw new GraphQLError(result?.error?.message);
+  }
+
+  return true
 };
