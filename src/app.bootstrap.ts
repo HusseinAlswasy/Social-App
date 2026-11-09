@@ -15,8 +15,14 @@ import postRouter from "./modules/post/post.controller";
 import commentRouter from "./modules/comment/comment.controller";
 import { schema_gql } from "./graphql/graphql.fileds";
 import { createHandler } from "graphql-http/lib/use/express";
-import { authentication } from "./common/middleware/authentication";
-
+import {
+  authentication,
+  decode_and_fetchUser,
+} from "./common/middleware/authentication";
+import { Server, Socket } from "socket.io";
+import redisService from "./service/redis.service";
+import socketGateway from "./modules/gateway/socket.gateway.js";
+import chatRouter from "./modules/chat/caht.controller.js";
 
 const app = express();
 const port = PORT;
@@ -38,7 +44,6 @@ export const bootstrap = async () => {
     res.status(200).json({ message: "Welcome On Social App.....🎈🫡" });
   });
 
-
   app.use(
     "/graphql",
     authentication,
@@ -47,9 +52,11 @@ export const bootstrap = async () => {
 
   app.use("/users", userRouter);
   app.use("/posts", postRouter);
-  app.use("/comment",commentRouter)
+  app.use("/comment", commentRouter);
 
   app.use("/users/notifications", notificationRouter);
+
+  app.use("/chat", chatRouter);
 
   app.use("{/*demo}", (req: Request, res: Response, next: NextFunction) => {
     throw new AppError(
@@ -60,7 +67,9 @@ export const bootstrap = async () => {
 
   app.use(GlobalErrorHandling);
 
-  app.listen(port, () => {
+  const httpServer = app.listen(port, () => {
     console.log(`Social App is Running on port ${port} 🥳`);
   });
+
+  await socketGateway.initIo(httpServer);
 };

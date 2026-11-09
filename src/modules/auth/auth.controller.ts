@@ -3,8 +3,12 @@ import US from "./auth.service";
 import { Validation } from "../../common/middleware/validation";
 import { signInSchema, signUpSchema } from "./auth.validation";
 import multerCloud from "../../common/middleware/multerCloude";
+import chatRouter from "../chat/caht.controller";
+import { authentication } from "../../common/middleware/authentication.js";
 
 const userRouter = Router();
+
+userRouter.use("/:userId/chat",chatRouter)
 
 userRouter.post("/signUp", Validation(signUpSchema), US.signUp);
 

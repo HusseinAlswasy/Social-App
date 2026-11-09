@@ -20,6 +20,7 @@
     "multer": "^2.4.0",
     "nodemailer": "^10.0.12",
     "redis": "^6.3.0",
+    "socket.io": "^4.8.4",
     "zod": "^4.6.5"
   },
   "name": "social-app",

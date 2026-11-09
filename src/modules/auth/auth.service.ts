@@ -20,6 +20,7 @@ import jwt from "jsonwebtoken";
 import { JWT_REFRESH_SECRET, JWT_SECRET } from "../../config/config.service.js";
 import { randomUUID } from "node:crypto";
 import { signInDto } from "./auth.validation";
+import { IRequest } from "../../common/types/request.type.js";
 
 class AuthServices {
   private readonly _userModel = new userRepository();
@@ -237,6 +238,24 @@ class AuthServices {
     const { Keys } = req.body;
     await new s3Service().deleteFolder(Keys);
     res.status(200).json({ message: "Folder deleted successfully" });
+  };
+
+  getProfile = async (req: IRequest, res: Response, next: NextFunction) => {
+    const userId = req.user?._id;
+    if (!userId) {
+      throw new AppError("User not found", 401);
+    }
+
+    const user = await this._userModel.findById(userId);
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+    successResponse({
+      res,
+      status: 200,
+      message: "User profile fetched successfully",
+      data: { user },
+    });
   };
 }
 

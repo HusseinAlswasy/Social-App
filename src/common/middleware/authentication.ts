@@ -7,14 +7,9 @@ import { RedisService } from "../../service/redis.service";
 import { IRequest } from "../types/request.type";
 const userRepo = new userRepository();
 import redisService from "../../service/redis.service";
+import { authorization } from "./authorization.js";
 
-export const authentication = async (
-  req: IRequest,
-  res: Response,
-  next: NextFunction,
-) => {
-  const authorization = req.headers.authorization;
-
+export const decode_and_fetchUser = async (authorization: string) => {
   if (!authorization?.startsWith("Bearer ")) {
     throw new AppError("Please provide a valid token", 400);
   }
@@ -47,9 +42,17 @@ export const authentication = async (
     throw new AppError("you are logout please login again...", 401);
   }
 
+  return { user, decode };
+};
+export const authentication = async (
+  req: IRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  const authorization = req.headers.authorization;
+  const { user, decode } = await decode_and_fetchUser(authorization as string);
   req.user = user;
   req.decode = decode;
-
   next();
 };
 
